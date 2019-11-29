@@ -20,6 +20,9 @@ H_0:  Twitter responses during the actual democratic debate will reflect the pol
 Packages loaded here.
 ```{r}
 library("twitteR")
+library("dplyr")
+library('sentimentr')
+library('ggplot2')
 ```
 
 ## Setup TWitter
@@ -47,20 +50,30 @@ Use Twitter's API to pull tweets that have the hashtag #demdebate or #democratic
 hashtag1 = "#demdebate"
 hashtag2 = "#democraticdebate"
 
-tw1 = twitteR::searchTwitter(hashtag1, n=1e3, since = '2019-11-20', until = '2019-11-20', retryOnRateLimit = 1e3)
+tw1 = twitteR::searchTwitter(hashtag1, n=1e3, since = '2019-11-20', until = '2019-11-21', retryOnRateLimit = 1e3)
 d1 = twitteR::twListToDF(tw1)
 
-tw2 = twitteR::searchTwitter(hashtag2, n=1e3, since = '2019-11-20', until = '2019-11-20', retryOnRateLimit = 1e3)
+tw2 = twitteR::searchTwitter(hashtag2, n=1e3, since = '2019-11-20', until = '2019-11-21', retryOnRateLimit = 1e3)
 d2 = twitteR::twListToDF(tw2)
 ```
 
 #Check Twitter Data
 
-Check dataframes for each tag that I pulled data from
+Combine dataframes of both hashtags
 
 ```{r}
-d1
-d2
+#Combine the hashtag dataframes
+df <- rbind(d1,d2)
+
+write.csv(df, file="DemocraticDebate_Nov20_TweetData.csv")
+```
+
+##Sentiment analysis of R, and Histogram of scoring
+
+```{r}
+##sentiment_df <- sentiment(df$text)
+
+qplot(sentiment_df$sentiment, geom="histogram", xlab = "Sentiment Score", ylab = "Number of Tweets", binwidth=0.1, main="Democratic Debate Tweet Sentiment Historgram")
 ```
 
 ##T-Test
