@@ -101,12 +101,13 @@ df$corybooker <- grepl(corybooker, df$text, ignore.case = TRUE)
 df$amyklobuchar <- grepl(amyklobuchar, df$text, ignore.case = TRUE)
 df$mikebloomberg <- grepl(mikebloomberg, df$text, ignore.case = TRUE)
 df$andrewyang <- grepl(andrewyang, df$text, ignore.case = TRUE)
+
 ```
 
-##Sentiment analysis of R, and Histogram of scoring
+##Overall sentiment analysis of R, and Histogram of scoring
 
 ```{r}
-sentiment_df <- sentiment(df$text)
+sentiment_df <- sentiment(get_sentences(df$text))
 
 qplot(sentiment_df$sentiment, geom="histogram", xlab = "Sentiment Score", ylab = "Number of Tweets", binwidth=0.1, main="Democratic Debate Tweet Sentiment Historgram")
 ```
