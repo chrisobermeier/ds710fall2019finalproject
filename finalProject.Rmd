@@ -112,6 +112,14 @@ sentiment_df <- sentiment(get_sentences(df$text))
 qplot(sentiment_df$sentiment, geom="histogram", xlab = "Sentiment Score", ylab = "Number of Tweets", binwidth=0.1, main="Democratic Debate Tweet Sentiment Historgram")
 ```
 
+##Biden Sentiment Analysis
+
+```{r}
+joebiden_sentiment <- sentiment(df$text[df$joebiden])
+
+qplot(joebiden_sentiment$sentiment, geom="histogram", xlab = "Sentiment Score", ylab = "Number of Tweets", binwidth=0.1, main="Democratic Debate Tweet Sentiment Historgram")
+```
+
 ##T-Test
 
 We want to use R to assess whether Twitter is a good subset representation of public sentiment compared to how people are polled afterwards.  In other words, can we see by Twitter's activities what we would see by otherwise going through all of the steps of polling?.
