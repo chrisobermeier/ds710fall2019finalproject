@@ -111,13 +111,35 @@ sentiment_df <- sentiment(get_sentences(df$text))
 
 qplot(sentiment_df$sentiment, geom="histogram", xlab = "Sentiment Score", ylab = "Number of Tweets", binwidth=0.1, main="Democratic Debate Tweet Sentiment Historgram")
 ```
+##Create function for Candidate Sentiment Analysis
+```{r}
+sentiment_analysis <- function(sentiment){
+  print(mean(sentiment))
+  
+  qplot(joebiden_sentiment$sentiment, geom="histogram", xlab = "Sentiment Score", ylab = "Number of Tweets", binwidth=0.1, main="Democratic Debate Tweet Sentiment Historgram")
+  
+}
+```
 
-##Biden Sentiment Analysis
+##Joe Biden Tweet Sentiment Analysis
 
 ```{r}
-joebiden_sentiment <- sentiment(df$text[df$joebiden])
+sentiment <- sentiment(df$text[df$joebiden])
+sentiment_analysis(sentiment$sentiment)
+```
 
-qplot(joebiden_sentiment$sentiment, geom="histogram", xlab = "Sentiment Score", ylab = "Number of Tweets", binwidth=0.1, main="Democratic Debate Tweet Sentiment Historgram")
+##Elizabeth Warren Tweet Sentiment Analysis
+
+```{r}
+sentiment <- sentiment(df$text[df$elizabethwarren])
+sentiment_analysis(sentiment$sentiment)
+```
+
+##Bernie Sanders Tweet Sentiment Analysis
+
+```{r}
+sentiment <- sentiment(df$text[df$berniesanders])
+sentiment_analysis(sentiment$sentiment)
 ```
 
 ##T-Test
