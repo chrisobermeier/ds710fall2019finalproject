@@ -13,7 +13,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ##Hypthosis
 
 The null hypothesis for a 2-sample t-test of this question is
-H_0:  Twitter responses during the actual democratic debate will reflect the polling that comes up in the following days about each of the candidates in terms of their support percentages..
+H_0:  Twitter responses about an upcoming democratic debate will reflect the polling about each of the candidates in terms of their support percentages. 
+
+Note:This is a slight deviation from the original plan since I had originally hoped to use the data during the debate using the twitter search attributes: since = '2019-11-20', until = '2019-11-21', however technical difficulties ahve prevented me from doing this.
 
 ##Packages
 
@@ -44,16 +46,16 @@ options(httr_oauth_cache=origop)
 
 ## Grab twtitter data
 
-Use Twitter's API to pull tweets that have the hashtag #demdebate or #democraticdebate on the date of November 20th when the last debate took place.
+Use Twitter's API to pull tweets that have the two most populat hashtags for the democratic debate: #demdebate or #democraticdebate.
 
 ```{r}
 hashtag1 = "#demdebate"
 hashtag2 = "#democraticdebate"
 
-tw1 = twitteR::searchTwitter(hashtag1, n=1e3, since = '2019-11-20', until = '2019-11-21', retryOnRateLimit = 1e3)
+tw1 = twitteR::searchTwitter(hashtag1, n=1e3, retryOnRateLimit = 1e3)
 d1 = twitteR::twListToDF(tw1)
 
-tw2 = twitteR::searchTwitter(hashtag2, n=1e3, since = '2019-11-20', until = '2019-11-21', retryOnRateLimit = 1e3)
+tw2 = twitteR::searchTwitter(hashtag2, n=1e3, retryOnRateLimit = 1e3)
 d2 = twitteR::twListToDF(tw2)
 ```
 
@@ -71,23 +73,14 @@ write.csv(df, file="DemocraticDebate_Nov20_TweetData.csv")
 ##Sentiment analysis of R, and Histogram of scoring
 
 ```{r}
-##sentiment_df <- sentiment(df$text)
+sentiment_df <- sentiment(df$text)
 
 qplot(sentiment_df$sentiment, geom="histogram", xlab = "Sentiment Score", ylab = "Number of Tweets", binwidth=0.1, main="Democratic Debate Tweet Sentiment Historgram")
 ```
 
 ##T-Test
 
-a. We want to use R to assess whether it is plausible that John Hancock was A Mourner, based on his mean word length.  **Explain** why a 2-sided, 2-sample t-test is appropriate for this.
-*A 2-sample t-test is used to see if there is a significant average difference between two groups.  In this case those two gorups wold be John Hancock and A Mourner, and we would be looking to see if there is a significant difference or not to differentiate them.*
-
-b. **Explain** why the `t.test()` function is not appropriate for the data we have available.
-*t.test() is used to calculate the similarities of the data if you have all of the source data. Cohens's d fits better in this situation since it calculates between the mean's of of each group divided by the standard deviation-two-areas - both data points we have, unlike the raw data for the articles we are just given a word length of article, mean word length and standard deviation for..*
-
-c. Write your own function for performing a 2-sided, 2-sample t-test for equality of means when the raw data are not available.  Use the information provided in `T-test formulas.pdf`.  **Use of Stack Exchange, Stack Overflow, etc, to solve this problem is prohibited.**
-
-- Use additional functions as needed to organize your work.
-- Your function(s) should not use any variables from the global environment.
+We want to use R to assess whether Twitter is a good subset representation of public sentiment compared to how people are polled afterwards.  In other words, can we see by Twitter's activities what we would see by otherwise going through all of the steps of polling?.
 
 ```{r}
 custom_t_test <- function(length1, length2, mean1, mean2, sd1, sd2){
