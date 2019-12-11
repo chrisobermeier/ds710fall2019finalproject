@@ -68,13 +68,39 @@ Combine dataframes of both hashtags
 #Combine the hashtag dataframes
 df <- rbind(d1,d2)
 
-write.csv(df, file="DemocraticDebate_Nov20_TweetData.csv")
+write.csv(df, file="DemocraticDebate_TweetData.csv")
 ```
 
 ##Pull econTabReport.csv data created from the econTabReport.pdf starting on page 164 of the file.
 
 ```{r}
 PollingData <- read.csv(file="econTabReport.csv", header=TRUE, sep=",")
+```
+
+##set keywords for each candidate
+
+```{r}
+joebiden = "joe|biden"
+elizabethwarren = "elizabeth|warren|liz"
+berniesanders = "bernie|sanders"
+petebuttigieg = "pete|buttigieg"
+corybooker = "cory|booker"
+amyklobuchar = "amy|klobuchar"
+mikebloomberg = "mike|bloomberg"
+andrewyang = "andrew|yang"
+```
+
+##Search for keywords and assign logical values to dataframe row for each candidate if they appear in the tweet or not
+
+```{r}
+df$joebiden <- grepl(joebiden, df$text, ignore.case = TRUE)
+df$elizabethwarren <- grepl(elizabethwarren, df$text, ignore.case = TRUE)
+df$berniesanders <- grepl(berniesanders, df$text, ignore.case = TRUE)
+df$petebuttigieg <- grepl(petebuttigieg, df$text, ignore.case = TRUE)
+df$corybooker <- grepl(corybooker, df$text, ignore.case = TRUE)
+df$amyklobuchar <- grepl(amyklobuchar, df$text, ignore.case = TRUE)
+df$mikebloomberg <- grepl(mikebloomberg, df$text, ignore.case = TRUE)
+df$andrewyang <- grepl(andrewyang, df$text, ignore.case = TRUE)
 ```
 
 ##Sentiment analysis of R, and Histogram of scoring
