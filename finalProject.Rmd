@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ##Hypthosis
 
 The null hypothesis for a 2-sample t-test of this question is
-H_0:  Twitter responses about an upcoming democratic debate will reflect the polling about each of the candidates in terms of their support percentages. 
+H_0:  Twitter responses about an upcoming democratic debate will reflect the polling about each of the candidates in terms of their support percentages
 
 Note:This is a slight deviation from the original plan since I had originally hoped to use the data during the debate using the twitter search attributes: since = '2019-11-20', until = '2019-11-21', however technical difficulties ahve prevented me from doing this.
 
@@ -25,6 +25,7 @@ library("twitteR")
 library("dplyr")
 library('sentimentr')
 library('ggplot2')
+library("readxl")
 ```
 
 ## Setup TWitter
@@ -68,6 +69,12 @@ Combine dataframes of both hashtags
 df <- rbind(d1,d2)
 
 write.csv(df, file="DemocraticDebate_Nov20_TweetData.csv")
+```
+
+##Pull econTabReport.csv data created from the econTabReport.pdf starting on page 164 of the file.
+
+```{r}
+PollingData <- read.csv(file="econTabReport.csv", header=TRUE, sep=",")
 ```
 
 ##Sentiment analysis of R, and Histogram of scoring
