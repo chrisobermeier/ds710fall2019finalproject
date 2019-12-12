@@ -1,7 +1,7 @@
 ---
 title: "Final Project"
 author: "Chris Obermeier"
-date: "11/28/2019"
+date: "12/11/2019"
 output:
   pdf_document: default
   word_document: default
@@ -203,7 +203,7 @@ t.test(PollingData$Total,tmp_mean)
 ```
 
 ##T-Test results
-The T-Test results show that the p-value is 0.008805 which means that there is strong evidence against the hypthosis that the values would be related.  That means we can reject the hypothesis and claim there is no real strong correlation.
+The T-Test results show that the p-value is 0.008809 which means that there is strong evidence against the hypthosis that the values would be related.  That means we can reject the hypothesis and claim there is no real strong correlation.
 
 ##Conclusion
 
