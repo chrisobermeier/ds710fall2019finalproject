@@ -13,7 +13,10 @@ knitr::opts_chunk$set(echo = TRUE)
 ##Hypthosis
 
 The null hypothesis for a 2-sample t-test of this question is
-H_0:  Twitter responses about an upcoming democratic debate will reflect the polling about each of the candidates in terms of their support percentages
+
+H_0: Twitter is able to show the same rankings of popularity for party debates as polling can during the time period.
+
+H_1: The two are different and not equivalent.
 
 Note:This is a slight deviation from the original plan since I had originally hoped to use the data during the debate using the twitter search attributes: since = '2019-11-20', until = '2019-11-21', however technical difficulties ahve prevented me from doing this.
 
@@ -71,12 +74,6 @@ df <- rbind(d1,d2)
 write.csv(df, file="DemocraticDebate_TweetData.csv")
 ```
 
-##Pull econTabReport.csv data created from the econTabReport.pdf starting on page 164 of the file.
-
-```{r}
-PollingData <- read.csv(file="econTabReport.csv", header=TRUE, sep=",")
-```
-
 ##set keywords for each candidate
 
 ```{r}
@@ -111,348 +108,103 @@ sentiment_df <- sentiment(get_sentences(df$text))
 
 qplot(sentiment_df$sentiment, geom="histogram", xlab = "Sentiment Score", ylab = "Number of Tweets", binwidth=0.1, main="Democratic Debate Tweet Sentiment Historgram")
 ```
-##Create function for Candidate Sentiment Analysis
+##Create function for Individual Candidate Sentiment Analysis Graphing
 ```{r}
-sentiment_analysis <- function(sentiment){
-  print(mean(sentiment))
+sentiment_analysis <- function(sentiment, candidateString){
   
-  qplot(joebiden_sentiment$sentiment, geom="histogram", xlab = "Sentiment Score", ylab = "Number of Tweets", binwidth=0.1, main="Democratic Debate Tweet Sentiment Historgram")
-  
+  qplot(sentiment, geom="histogram", xlab = "Sentiment Score", ylab = "Number of Tweets", binwidth=0.1, main=candidateString)
+
 }
 ```
 
-##Joe Biden Tweet Sentiment Analysis
+##Candidate Tweet Sentiment Analysis
 
 ```{r}
-sentiment <- sentiment(df$text[df$joebiden])
-sentiment_analysis(sentiment$sentiment)
+sentiment_mean_list <- list()
+
+sentiment <- sentiment(get_sentences(df$text[df$joebiden]))
+sentiment_analysis(sentiment$sentiment, "Joe Biden")
+sentiment_mean_list <- append(sentiment_mean_list, mean(sentiment$sentiment))
+
+sentiment <- sentiment(get_sentences(df$text[df$elizabethwarren]))
+sentiment_analysis(sentiment$sentiment, "Elizabeth Warren")
+sentiment_mean_list <- append(sentiment_mean_list, mean(sentiment$sentiment))
+
+sentiment <- sentiment(get_sentences(df$text[df$berniesanders]))
+sentiment_analysis(sentiment$sentiment, "Bernie Sanders")
+sentiment_mean_list <- append(sentiment_mean_list, mean(sentiment$sentiment))
+
+sentiment <- sentiment(get_sentences(df$text[df$petebuttigieg]))
+sentiment_analysis(sentiment$sentiment, "Pete Buttigieg")
+sentiment_mean_list <- append(sentiment_mean_list, mean(sentiment$sentiment))
+
+sentiment <- sentiment(get_sentences(df$text[df$corybooker]))
+sentiment_analysis(sentiment$sentiment, "Cory Booker")
+sentiment_mean_list <- append(sentiment_mean_list, mean(sentiment$sentiment))
+
+sentiment <- sentiment(get_sentences(df$text[df$amyklobuchar]))
+sentiment_analysis(sentiment$sentiment, "Amy Klobuchar")
+sentiment_mean_list <- append(sentiment_mean_list, mean(sentiment$sentiment))
+
+sentiment <- sentiment(get_sentences(df$text[df$mikebloomberg]))
+sentiment_analysis(sentiment$sentiment, "Mike Bloomberg")
+sentiment_mean_list <- append(sentiment_mean_list, mean(sentiment$sentiment))
+
+sentiment <- sentiment(get_sentences(df$text[df$andrewyang]))
+sentiment_analysis(sentiment$sentiment, "Andrew Yang")
+sentiment_mean_list <- append(sentiment_mean_list, mean(sentiment$sentiment))
 ```
 
-##Elizabeth Warren Tweet Sentiment Analysis
+#Create Temp List and get Sentiment Mean
 
 ```{r}
-sentiment <- sentiment(df$text[df$elizabethwarren])
-sentiment_analysis(sentiment$sentiment)
+tmp_mean = unlist(sentiment_mean_list, F)
+
+sentiment_mean <-mean(tmp)
 ```
 
-##Bernie Sanders Tweet Sentiment Analysis
+#Create two entries for each candidate with name and sentiment mean
 
 ```{r}
-sentiment <- sentiment(df$text[df$berniesanders])
-sentiment_analysis(sentiment$sentiment)
+candidates_list = list(name = "Joe Biden", "Elizabeth Warren", "Bernie Sanders", "Pete Buttigieg", "Cory Booker", "Amy Klobuchar", "Mike Bloomberg", "Andrew Yang")
+```
+
+##Add candidate entries to graphable list
+
+```{r}
+plot(tmp_mean, axes=FALSE, xlab="Candidates", ylab = "Mean Sentiment Tweet Value")
+axis(2)
+axis(1, at=seq_along(tmp_mean),labels=as.character(candidates_list), las=2)
+box()
+```
+
+
+##Pull econTabReport.csv data created from the econTabReport.pdf starting on page 164 of the file.
+
+```{r}
+PollingData <- read.csv(file="econTabReport.csv", header=TRUE, sep=",")
+```
+
+##Create graph on polling data overall values
+
+```{r}
+plot(PollingData$Total, axes=FALSE, xlab="Candidates", ylab = "Mean Sentiment Tweet Value")
+axis(2)
+axis(1, at=seq_along(PollingData$Total),labels=as.character(candidates_list), las=2)
+box()
 ```
 
 ##T-Test
 
-We want to use R to assess whether Twitter is a good subset representation of public sentiment compared to how people are polled afterwards.  In other words, can we see by Twitter's activities what we would see by otherwise going through all of the steps of polling?.
+We want to use R to assess whether Twitter is a good subset representation of public sentiment compared to how people are polled afterwards.  In other words, can we see by Twitter's activities what we would see by otherwise going through all of the steps of polling?
 
 ```{r}
-custom_t_test <- function(length1, length2, mean1, mean2, sd1, sd2){
-  #standard Error
-  se <- sqrt((sd1^2/length1) + (sd2^2/length2))
-  
-  #T Value
-  t <- (mean1-mean2)/se
-  
-  #Degrees of Freedom
-  df <- (((sd1^2/length1)+(sd2^2/length2))^2) /  ((((sd1^2/length1)^2)/(length1-1))+(((sd2^2/length2)^2)/(length2-1)))
-  
-  #P Value
-  p_value <- 2 * pt(-abs(t),df)
-  p_value
-}
+t.test(PollingData$Total,tmp_mean)
 ```
 
-d. Test your function by comparing it to t.test() on a pair of samples.  You may wish to use `rnorm()` to generate random data from a normal distribution.  If the p-value from your function doesn't match the p-value from `t.test()`, then revise your code from part c.
+##T-Test results
+The T-Test results show that the p-value is 0.008805 which means that there is strong evidence against the hypthosis that the values would be related.  That means we can reject the hypothesis and claim there is no real strong correlation.
 
-```{r}
-  length1 = 130
-  hancockLength = 121
-  mean1 = 5
-  hancockMean = 4.69
-  sd1 = 2.5
-  hancockStandardDeviation = 2.60
-  
-  #Create datasets based on rnorm values
-  ds1 = rnorm(length1, mean=mean1, sd = sd1)
-  ds2 = rnorm(hancockLength, mean=hancockMean, sd = hancockStandardDeviation)
-  
-  #Do t.test with created random data
-  tTestResult = t.test(ds1, ds2, alternative="two.sided")
-  print(tTestResult)
-  
-  #Do own test to show p value and compare
-  p_value = custom_t_test(length1, hancockLength, mean1, hancockMean, sd1, hancockStandardDeviation)
-  print(p_value)
-```
+##Conclusion
 
-e. Apply your function to assess whether it is plausible that Hancock was A Mourner.
-
-```{r}
-  aMourner <- read.csv(file="AMourner.csv", header=FALSE, sep=",")
-  aMournerMean = rowMeans(aMourner)
-  aMournerLength = length(aMourner)
-  aMournerStandardDeviation = sd(aMourner)
-  
-  p_value = custom_t_test(hancockLength, aMournerLength, hancockMean, aMournerMean, hancockStandardDeviation, aMournerStandardDeviation)
-  p_value
-```
-**Write** your conclusion as a sentence.
-*The null hypothesis is that is is possible that Hancock was A Mourner.  Since p > .05, we cannot reject that null hyptohesis that is is plausible that Hancock was A Mourner*
-- Note:  The null hypothesis for a 2-sample t-test of this question is
-H_0:  mu_Mourner = mu_Hancock
-i.e., that A Mourner and Hancock have the same mean word length.  In other words, the null hypothesis is that it is plausible that Hancock was A Mourner.
-
-## Problem 2:  Identifying the language of an encrypted text
-
-### Problem overview
-
-2.  In homework 5, you counted the frequencies of letters in two encrypted texts.  In this problem, you will use statistical analysis to identify the language in which the text was written, and decrypt it.
-
-Here's the basic idea:  Suppose that the language FakeEnglish has just 2 letters, E and S, with E occurring 55% of the time and S occurring 45% of the time.  Also, suppose that the language FakeWelsh also has just 2 letters, A (occurring 90% of the time) and M (occurring 10% of the time).  Suppose your encrypted text uses the letter V 430 times and the letter X 570 times.  Which language do you think it came from?
-
-The encrypted text probably came from FakeEnglish, because the frequencies of each letter (43% and 57%) are much closer to the frequencies in FakeEnglish than to FakeWelsh.  We can also say that the encrypted letter X probably represents the FakeEnglish letter E, and encrypted letter V probably represents FakeEnglish letter S.  It doesn't matter that V and X don't occur in FakeEnglish or FakeWelsh, because the encrypted text is encrypted--it uses different letters to represent each letter in the language it came from.
-
-So, our overall strategy to identify the language of each text will be as follows:
-
-1. Put the encrypted letter frequencies in order of increasing frequency.  We will guess that the most common letter in the encrypted text represents the most common letter in the real language (English or Welsh), the 2nd-most common letter represents the 2nd-most common letter, and so on.  This is just like our guess in the example above, that X probably represents E.
-
-2. Use a chi-squared goodness-of-fit test to test whether the frequencies in the encrypted data are consistent with the proportions in English or Welsh.
-
-- You may need to combine some letter categories to satisfy the assumptions of the chi-squared goodness-of-fit test.
-
-### Tasks to complete
-
-a. The file Letter Frequencies.csv contains data on the frequencies of letters in different languages.  (Source:  http://www.sttmedia.com/characterfrequency-english and http://www.sttmedia.com/characterfrequency-welsh, accessed 21 August 2015.  Used by permission of Stefan Trost.)  Read these data into R. 
-
-```{r}
-letterFrequencies <- read.csv(file="Letter Frequencies.csv", header=TRUE, sep=",")
-```
-
-b. Make bar graphs of the frequencies in English and Welsh.  Use the code
-
-`mutate(Letter = reorder(Letter, English))`
-
-(and similarly for Welsh)
-to sort the bars in increasing order of letter frequency.
-```{r}
-letterFrequencies %>%
-  mutate(Letter = reorder(Letter,English)) %>%
-  gf_col(English ~ Letter)
-
-letterFrequencies %>%
-  mutate(Letter = reorder(Letter,Welsh)) %>%
-  gf_col(Welsh ~ Letter)
-```
-
-
-c. Read the letter frequencies from encryptedA into R.  Make a barplot of the letter frequencies, with the letters listed in order of increasing frequency. 
-```{r}
-encryptedACharacterCount <- read.csv(file="EncryptedACharacterCount.csv", header=FALSE, sep=",")
-
-encryptedBCharacterCount <- read.csv(file="EncryptedBCharacterCount.csv", header=FALSE, sep=",")
-```
-
-```{r}
-encryptedACharacterCount %>%
-  mutate(V1 = reorder(V1,V2)) %>%
-  gf_col(V2 ~ V1)
-
-encryptedBCharacterCount %>%
-  mutate(V1 = reorder(V1,V2)) %>%
-  gf_col(V2 ~ V1)
-```
-
-
-d.  Based on the **shape** of the plots in parts b and c, which language do you think encryptedA came from?  Explain.
-
-(Note:  The order of the letters along the horizontal axis of each plot will be quite different, because the plots from part b show the frequencies in plain English or plain Welsh, and the plot from part c shows the frequencies in the encrypted text.  So, you should ignore what letter is written below each bar when answering this question.  Instead, look at things like how steeply the bars grow from the least-common letter to the most-common letter.)
-
-*I think there is a way you could make a valid point for both.  Looking at the lack of the usage of the first 6 letters, it seems liklier to be Welsh.  However the more gradual linear increase and the big count increase on the last letter at the end is closer to English.*
-
-e. Now that we have a visual understanding of the data, we will proceed with a hypothesis test.  Start by putting the frequencies of letters in English in increasing order, and saving the results in a variable (either the same data frame or a new vector).  Display the first few entries of that variable to verify that it is in increasing order.
-
-- If you are using `dplyr`, the function `arrange` may be useful.
-- If you are using the base R installation, the function `sort` may be useful.
-
-```{r}
-letterFrequenciesEnglish <- letterFrequencies %>%
-  select(Letter, English) %>%
-  arrange(English)
-
-letterFrequenciesWelsh <- letterFrequencies %>%
-  select(Letter, Welsh) %>%
-  arrange(Welsh)
-```
-
-f. Next, put the letter frequencies of encryptedA in increasing order, and save the results in a variable (either the same data frame or a new vector).  Display the first few entries of that variable to verify that it is in increasing order.
-
-```{r}
-encryptedACharacterCount <- encryptedACharacterCount %>%
-    arrange(V2)
-head(encryptedACharacterCount)
-
-encryptedBCharacterCount <- encryptedBCharacterCount %>%
-    arrange(V2)
-head(encryptedBCharacterCount)
-```
-
-- Note that homework 5 asked you to include all 26 letters in the frequency file (even if some letters had a frequency of 0) and no punctuation.  Verify that you have exactly 26 frequencies of letters in encryptedA.
-
-g. **Write** the null and alternative hypotheses for a chi-squared Goodness of Fit test of this question.
-*H0 = encryptedA is that the text is an encrypted piece of writing that originated in English.*
-
-*Ha = at least on of the letters from encryptedA do not come from English letters*
-
-h.	Use R to conduct the chi-squared Goodness of Fit test, and store the results in the variable `test`.
-```{r}
-test <- chisq.test(encryptedACharacterCount$V2,p = letterFrequenciesEnglish$English)
-```
-
-i. View the contents of `test$expected`.  
-```{r}
-test$expected
-```
-Notice that some of the expected frequencies are below the threshold for the chi-squared test to be appropriate.  Use the function you wrote in Homework 3, problem 2e to combine the frequencies in `LetterFreqs$English` so that the values in `test$expected` are greater than or equal to the threshold.  Also combine counts of letters from encryptedA.txt to correspond with making the values in `test$expected` be greater than or equal to the threshold.
-
-- Note that all three of the vectors `LetterFreqs$English`, `test$expected`, and `encryptedA$count` should be in increasing order.
-- After the due date for Homework 3 has passed and you have submitted your own work for Homework 3, you are welcome to view your classmates' pull requests for Homework 3 to see how they solved problem 2e.
-
-```{r}
-vector_function1 <- function(vector, n) {
-  
-  first <- 0
-  for (i in 1:n){
-    first <- first + vector[i]
-  }
-  return_vector <- c(first,vector[(n+1):length(vector)])
-  return(return_vector)
-  
-}
-vector_function2 <- function(vector, threshold = 5) {
-  
-  if (vector[1] > threshold) {
-    i = 1
-    return(i)
-      } else {
-        total <- 0
-        for (i in 1:length(vector)){
-          total <- total + vector[i]
-          if(total >= threshold){
-            break
-          }
-        }
-        if (total < threshold) {
-           return(paste('The sum of all elements in the vector is less than', threshold))
-        } else {
-            return(i)
-        }
-   }
-}
-vector_function3 <- function(x,y,threshold = 5) {
-  
-  n <- vector_function2(y,threshold)
-  if (class(n) == 'character') {
-    return('Try new input vectors or lower the threshold value')
-  } else {
-      return_value <- vector_function1(x,n)
-      return(return_value)
-    }
-}
-
-#These break the vectors and break the next chi-squared test
-sumEncryptedA <- vector_function3(encryptedACharacterCount$V2, test$expected)
-sumEnglish <- vector_function3(letterFrequenciesEnglish$English, test$expected)
-```
-
-j. Repeat the chi-squared goodness-of-fit test with your combined-category data.
-```{r}
-test <- chisq.test(sumEncryptedA, p = sumEnglish)
-test
-```
-
--	If you still get the warning message, "Chi-squared approximation may be incorrect," one of two things has happened:
-1.	You did not combine enough categories in step i, or
-2.	You are using the wrong syntax for the chi-squared Goodness of Fit test.
-
-    -	Check that the degrees of freedom (df) are 1 less than the number of categories you used.  If the degrees of freedom are > 100, then double-check the syntax demonstrated in the Goodness of Fit video.
-    
--	If either of these things is true, your results will not be reliable.
-
-k.	Write your conclusion in the context of the problem.
-*Based on the p value being less than 0.05, the null hypthosesis is rejected and at least one of the letters in encryptedA is based in english.*
-
--	Note that the null hypothesis is that the observed counts of the most-frequent letter, 2nd-most frequent letter, etc. are consistent with the theoretical frequencies.  Therefore, the null hypothesis is that the text is an encrypted piece of writing in English.
-
-L.	Repeat steps h-k for Welsh, and then repeat for both languages for encryptedB.  (It may help to use functions or `for` loops to help you organize your code.)  Fill in the p-values you get in place of the ???? in the following table:
-
-```{r}
-#Repeating h-k for English and Encrypted B
-
-#i
-test2 <- chisq.test(encryptedBCharacterCount$V2,p = letterFrequenciesEnglish$English)
-
-#?
-sumEncryptedB <- vector_function3(encryptedBCharacterCount$V2, test2$expected)
-sumEnglish <- vector_function3(letterFrequenciesEnglish$English, test2$expected)
-
-#j
-test2 <- chisq.test(sumEncryptedB, p = sumEnglish)
-test2
-```
-#h
-*Based on the p value being less than 0.05, the null hypthosesis is accepted and encryptedB is not based in English.*
-
-```{r}
-#Repeating h-k for Welsh and Encrypted A
-
-#i
-test3 <- chisq.test(encryptedACharacterCount$V2,p = letterFrequenciesWelsh$Welsh)
-
-#?
-sumEncryptedA <- vector_function3(encryptedACharacterCount$V2, test3$expected)
-sumWelsh <- vector_function3(letterFrequenciesWelsh$Welsh, test3$expected)
-
-#j
-test3 <- chisq.test(sumEncryptedA, p = sumWelsh)
-test3
-```
-#h
-**Based on the p value being less than 0.05, the null hypthosesis is accepted and encryptedA is not based in Welsh*
-
-```{r}
-#Repeating h-k for Welsh and Encrypted B
-
-#i
-test4 <- chisq.test(encryptedBCharacterCount$V2,p = letterFrequenciesWelsh$Welsh)
-
-#?
-sumEncryptedB <- vector_function3(encryptedBCharacterCount$V2, test4$expected)
-sumWelsh <- vector_function3(letterFrequenciesWelsh$Welsh, test4$expected)
-
-#j
-test4 <- chisq.test(sumEncryptedB, p = sumWelsh)
-test4
-```
-#h
-*Based on the p value being less than 0.05, the null hypthosesis is rejected and at least one of the letters in encryptedB is based in Welsh*
-
-```{r table2, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'}
-tabl <- "  
-| Text        |   English   |    Welsh     |\n
-|-------------|-------------|--------------|\n
-| EncryptedA  |   0.002945  |    0.5736    |\n
-| EncryptedB  |    0.7146   |  5.414e-05   |\n
-"
-cat(tabl) # output the table in a format good for HTML/PDF/docx conversion
-```
-		
-
-m.	Based on the hypothesis tests, which text do you think came from which language?  
-
--	This should be a reasonably clear decision.  If all 4 of your p-values are near 2*10^(-16), or all 4 are near 0.5, double-check your work in steps h-j.
-
-*EncryptedA is likely created from English and EncryptedB was likely created from Welsh*
-
-n.	Optional:  Try to decrypt the English text.  Simon Singh's Black Chamber website (http://www.simonsingh.net/The_Black_Chamber/substitutioncrackingtool.html) will automatically substitute letters for you, so you can test different possibilities for what English plaintext letter is represented by each letter in the ciphertext.  Start by substituting the letter E for the most common letter in the ciphertext.  Then use frequencies of letters in the ciphertext, common patterns of letters, and experimentation to determine other substitutions.
-
+H_0: The data that was used in the test was nowhere near even close.  You can see by simply eyeballing the results that the tweets' sentiment score had really no relation to how well the candidates polled.
