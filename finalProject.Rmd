@@ -28,7 +28,6 @@ library("twitteR")
 library("dplyr")
 library('sentimentr')
 library('ggplot2')
-library("readxl")
 ```
 
 ## Setup TWitter
@@ -160,7 +159,7 @@ sentiment_mean_list <- append(sentiment_mean_list, mean(sentiment$sentiment))
 ```{r}
 tmp_mean = unlist(sentiment_mean_list, F)
 
-sentiment_mean <-mean(tmp)
+sentiment_mean <-mean(tmp_mean)
 ```
 
 #Create two entries for each candidate with name and sentiment mean
@@ -188,7 +187,7 @@ PollingData <- read.csv(file="econTabReport.csv", header=TRUE, sep=",")
 ##Create graph on polling data overall values
 
 ```{r}
-plot(PollingData$Total, axes=FALSE, xlab="Candidates", ylab = "Mean Sentiment Tweet Value")
+plot(PollingData$Total, axes=FALSE, xlab="Candidates", ylab = "Polling Voting Percentage")
 axis(2)
 axis(1, at=seq_along(PollingData$Total),labels=as.character(candidates_list), las=2)
 box()
